@@ -1,10 +1,8 @@
 #include "GameScene.h"
-
-USING_NS_CC;
+#include "Global.h"
 
 Scene* GameScene::createScene()
 {
-
 	auto scene = Scene::create();
 
 	auto layer = GameScene::create();
@@ -26,29 +24,34 @@ bool GameScene::init()
 	level->loadMap("level1.tmx");
 	level->retain();
 
+
+	auto director = Director::getInstance();
+	level->getMap()->setScale(SCALE_FACTOR);
+
 	this->addChild(level->getMap());
+
+	SpriteFrameCache::getInstance()->addSpriteFramesWithFile("solbrain.plist");
+
+	player_sprite = Sprite::createWithSpriteFrameName("idle");
+	player_sprite->setScale(SCALE_FACTOR);
+	player_sprite->setFlippedX(true);
+
+	Point point = Point(10, 2);
+	Size size = player_sprite->getContentSize();
+
+	player_sprite->setPosition(level->positionForTileCoordinate(size, point));
+
+	player = new Player();
+	player->retain();
+
+	this->addChild(player_sprite);
 
 	return true;
 }
 
-void GameScene::menuCloseCallback(Ref* pSender)
-{
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_WP8) || (CC_TARGET_PLATFORM == CC_PLATFORM_WINRT)
-	return;
-#endif
-
-	Director::getInstance()->end();
-
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
-	exit(0);
-#endif
-}
-
-GameScene::GameScene(void)
-{
+GameScene::GameScene() {
 }
 
 GameScene::~GameScene(void)
 {
-	level->release();
 }

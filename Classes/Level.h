@@ -12,6 +12,8 @@ public:
 	void loadMap(const char* name);
 	TMXTiledMap * getMap();
 
+	Point positionForTileCoordinate(Size s, Point point);
+
 	Level(void);
 	virtual ~Level(void);
-};
+};	
