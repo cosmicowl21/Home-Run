@@ -1,18 +1,21 @@
 #include "Level.h"
 #include "Global.h"
 
-void Level::loadMap(const char* mapname) {
+void Level::loadMap(const char* mapname) 
+{
 
 	map = TMXTiledMap::create(mapname);
 	map->retain();
 
 }
 
-TMXTiledMap * Level::getMap() {
+TMXTiledMap * Level::getMap() 
+{
 	return map;
 }
 
-Point Level::positionForTileCoordinate(Size s, Point point) {
+Point Level::positionForTileCoordinate(Size s, Point point)
+{
 
 	float x = floor(s.width / 2 * SCALE_FACTOR + point.x * map->getTileSize().width * SCALE_FACTOR);
 	float y = floor(s.height / 2 * SCALE_FACTOR + point.y * map->getTileSize().height * SCALE_FACTOR);

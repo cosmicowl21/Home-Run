@@ -1,4 +1,5 @@
 #include "AppDelegate.h"
+
 #include "GameScene.h"
 
 USING_NS_CC;
@@ -22,7 +23,8 @@ bool AppDelegate::applicationDidFinishLaunching()
 	auto glview = director->getOpenGLView();
 	if (!glview) 
 	{
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
+	// if the target platform is any of the below then use the screen size set for window size
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX) || (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
 		glview = GLViewImpl::createWithRect("Home Run", Rect(0, 0, designResolutionSize.width, designResolutionSize.height));
 #else
 		glview = GLViewImpl::create("Home_Run");

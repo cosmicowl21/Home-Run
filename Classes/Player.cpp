@@ -1,5 +1,5 @@
 #include "Player.h"
-
+#include <iostream>
 Player::Player(void)
 {
 
@@ -14,5 +14,6 @@ Player::Player(void)
 
 Player::~Player(void)
 {
+
 }
 
