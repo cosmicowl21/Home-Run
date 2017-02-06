@@ -1,7 +1,6 @@
 #include "GameScene.h"
 #include "Global.h"
 
-
 Scene* GameScene::createScene()
 {
 	auto scene = Scene::create();
@@ -36,23 +35,40 @@ bool GameScene::init()
 	player_sprite->setScale(SCALE_FACTOR);
 	player_sprite->setFlippedX(true);
 
-
 	Point point = Point(10, 2);
 	Size size = player_sprite->getContentSize();
+
 
 	player_sprite->setPosition(level->positionForTileCoordinate(size, point));
 
 	player = new Player();
 	player->retain();
 	player->state = Player::State::Standing;
-	this->setupAnimations();
 
+	Point origin = Director::getInstance()->getVisibleOrigin();
+	Size wsize = Director::getInstance()->getVisibleSize();  //default screen size (or design resolution size, if you are using design resolution)
+	Point *center = new Point(wsize.width / 2 + origin.x, wsize.height / 2 + origin.y);
+
+	cameraTarget = Sprite::create();
+	cameraTarget->setPositionX(player_sprite->getPosition().x); // set to players x
+	cameraTarget->setPositionY(wsize.height / 2 + origin.y); // center of height
+
+	cameraTarget->retain();
+
+	this->setupAnimations();
 	this->addChild(player_sprite);
 	this->schedule(schedule_selector(GameScene::updateScene));
+	this->addChild(cameraTarget);
+
+	camera = Follow::create(cameraTarget, Rect::ZERO);
+	camera->retain();
+
+	this->runAction(camera);
 	return true;
 }
 
-void GameScene::setupAnimations() {
+void GameScene::setupAnimations() 
+{
 
 	AnimationCache *cache = AnimationCache::getInstance();
 	Animation *animation = cache->getAnimation("walk");
@@ -69,14 +85,16 @@ void GameScene::setupAnimations() {
 void GameScene::updateScene(float delta) 
 {
 
+	cameraTarget->setPositionX(player_sprite->getPosition().x);
 	this->updatePlayer(delta);
 
 }
 
-void GameScene::updatePlayer(float delta) 
+void GameScene::updatePlayer(float delta)
 {
 
-	if (std::find(heldKeys.begin(), heldKeys.end(), RIGHT_ARROW) != heldKeys.end()) {
+	if (std::find(heldKeys.begin(), heldKeys.end(), RIGHT_ARROW) != heldKeys.end()) 
+	{
 
 		player->velocity.x = PLAYER_MAX_VELOCITY;
 
@@ -91,13 +109,15 @@ void GameScene::updatePlayer(float delta)
 	if (std::find(heldKeys.begin(), heldKeys.end(), LEFT_ARROW) != heldKeys.end()) 
 	{
 		player->velocity.x = -PLAYER_MAX_VELOCITY;
-		if (player->grounded) {
+
+		if (player->grounded)
+		{
 			player->state = Player::State::Walking;
 		}
 		player->facingRight = false;
 	}
 	// clamp the velocity to the maximum, x-axis only
-	if (std::abs(player->velocity.x) > PLAYER_MAX_VELOCITY) 
+	if (std::abs(player->velocity.x) > PLAYER_MAX_VELOCITY)
 	{
 		player->velocity.x = signum(player->velocity.x) * PLAYER_MAX_VELOCITY;
 	}
@@ -124,7 +144,7 @@ void GameScene::updatePlayer(float delta)
 void GameScene::updatePlayerSprite(float delta)
 {
 
-	if (player->state == Player::State::Walking) 
+	if (player->state == Player::State::Walking)
 	{
 
 		if (walkRight->isDone()) 
@@ -138,12 +158,13 @@ void GameScene::updatePlayerSprite(float delta)
 		{
 			player_sprite->setFlippedX(true);
 		}
-		else 
+		else
 		{
 			player_sprite->setFlippedX(false);
 		}
 
 	}
+
 	else if (player->state == Player::State::Jumping) 
 	{
 

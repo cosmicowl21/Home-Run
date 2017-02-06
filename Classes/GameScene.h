@@ -1,5 +1,5 @@
 #pragma once
-
+#include <iostream>
 #include "cocos2d.h"
 #include "Level.h"
 #include "Player.h"
@@ -18,10 +18,13 @@ public:
 	Level * level;
 	Player *player;
 	Sprite *player_sprite;
+	Sprite *cameraTarget;
 
 	Animate *walkRight;
 	Animate *jumping;
 	Animate *falling;
+
+	Follow *camera;
 
 	vector<EventKeyboard::KeyCode> heldKeys;
 
