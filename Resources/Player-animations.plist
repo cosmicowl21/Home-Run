@@ -74,7 +74,7 @@
 		<integer>2</integer>
 		<key>spritesheets</key>
 		<array>
-			<string>solbrain.plist</string>
+			<string>Player.plist</string>
 		</array>
 	</dict>
 </dict>

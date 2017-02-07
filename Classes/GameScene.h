@@ -1,11 +1,12 @@
+
 #pragma once
-#include <iostream>
+
 #include "cocos2d.h"
 #include "Level.h"
 #include "Player.h"
 #include <algorithm>
-#include <vector>
 #include <string>
+#include <vector>
 
 using namespace std;
 USING_NS_CC;
@@ -24,7 +25,14 @@ public:
 	Animate *jumping;
 	Animate *falling;
 
+	vector<Sprite*> enemyList;
+
+	boolean collidesX;
+	float stutteringFix;
+
 	Follow *camera;
+
+	DrawNode *rectWithBorder;
 
 	vector<EventKeyboard::KeyCode> heldKeys;
 
@@ -34,8 +42,10 @@ public:
 	virtual void onKeyReleased(EventKeyboard::KeyCode keyCode, Event* event);
 
 	void updateScene(float interval);
+
 	void updatePlayer(float interval);
 	void updatePlayerSprite(float interval);
+	void loadEnemies();
 
 	int signum(float x);
 
