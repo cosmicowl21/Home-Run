@@ -4,25 +4,35 @@
 #include "cocos2d.h"
 using namespace cocos2d;
 
-class Player : public Object
+class Player : public Sprite
 {
-
 public:
-	//FIELDS
-	enum State {
-		Standing, Walking, Jumping
-	};
 
-	State state;
+	float velocity_x;
+	float velocity_y;
 
-	bool facingRight;
+	int direction;
+	int facing_left;
+	int facing_right;
+	int facing_up;
+	int facing_down;
+	int facing_down_left;
+	int facing_down_right;
+	int facing_up_left;
+	int facing_up_right;
 	bool grounded;
-	float stateTime;
+	bool jumping;
 
+	Animate *walk;
 	Size player_size;
 
-	Point position;
-	Point velocity;
+	Rect getCollisionBox();
+	Rect getUpperCollisionBox();
+
+	static Player* create();
+
+	void updateState(float delta);
+	void setupAnimation(const char* name);
 
 	Player(void);
 	virtual ~Player(void);

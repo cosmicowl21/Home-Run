@@ -30,38 +30,24 @@ bool GameScene::init()
 
 	this->addChild(level->getMap());
 
-	SpriteFrameCache::getInstance()->addSpriteFramesWithFile("solbrain.plist");
-	AnimationCache::getInstance()->addAnimationsWithFile("solbrain-animations.plist");
-
-	player_sprite = Sprite::createWithSpriteFrameName("idle");
-	player_sprite->setScale(SCALE_FACTOR);
-	player_sprite->setAnchorPoint(Point(0, 0));
-
-	player_sprite->setFlippedX(true);
+	player = Player::create();
+	player->retain();
 
 	Point point = Point(10, 2);
 
-	player_sprite->setPosition(level->tileCoordinateToPosition(point));
-
-	player = new Player();
-	player->retain();
-	player->state = Player::State::Standing;
-	player->position = player_sprite->getPosition();
-	player->player_size.width = player_sprite->getBoundingBox().size.width;
-	player->player_size.height = player_sprite->getBoundingBox().size.height;
+	player->setPosition(level->tileCoordinateToPosition(point));
 
 	Point origin = Director::getInstance()->getVisibleOrigin();
 	Size wsize = Director::getInstance()->getVisibleSize();  //default screen size (or design resolution size, if you are using design resolution)
 	Point *center = new Point(wsize.width / 2 + origin.x, wsize.height / 2 + origin.y);
 
 	cameraTarget = Sprite::create();
-	cameraTarget->setPositionX(player_sprite->getPosition().x); // set to players x
+	cameraTarget->setPositionX(player->getPositionX()); // set to players x
 	cameraTarget->setPositionY(wsize.height / 2 + origin.y); // center of height
 
 	cameraTarget->retain();
 
-	this->setupAnimations();
-	this->addChild(player_sprite);
+	this->addChild(player);
 	this->schedule(schedule_selector(GameScene::updateScene));
 
 	this->addChild(cameraTarget);
@@ -69,9 +55,9 @@ bool GameScene::init()
 	rectWithBorder = DrawNode::create();
 	Vec2 vertices[] =
 	{
-		Vec2(0, player_sprite->getBoundingBox().size.height),
-		Vec2(player_sprite->getBoundingBox().size.width, player_sprite->getBoundingBox().size.height),
-		Vec2(player_sprite->getBoundingBox().size.width, 0),
+		Vec2(0, player->player_size.height),
+		Vec2(player->player_size.width, player->player_size.height),
+		Vec2(player->player_size.width, 0),
 		Vec2(0,0)
 	};
 
@@ -88,25 +74,11 @@ bool GameScene::init()
 	return true;
 }
 
-void GameScene::setupAnimations() {
+void GameScene::loadEnemies() 
+{
 
-	AnimationCache *cache = AnimationCache::getInstance();
-	Animation *animation = cache->getAnimation("walk");
-	Animate* animate = Animate::create(animation);
-
-	animate->getAnimation()->setRestoreOriginalFrame(true);
-	animate->setDuration(0.80f);
-	animate->setTarget(player_sprite);
-
-	this->walkRight = animate;
-	this->walkRight->retain();
-
-}
-
-void GameScene::loadEnemies() {
-
-	Sprite *enemy1 = Sprite::create("mum.png");
-	enemy1->setPosition(level->tileCoordinateToPosition(Point(33, 2)));
+	Sprite *enemy1 = Sprite::create("mom.png");
+	enemy1->setPosition(level->tileCoordinateToPosition(Point(30, 0.5)));
 	enemy1->setAnchorPoint(Point::ZERO);
 	enemy1->setScale(ENEMY_SCALE_FACTOR);
 	enemy1->setFlippedX(true);
@@ -115,7 +87,7 @@ void GameScene::loadEnemies() {
 	enemyList.push_back(enemy1);
 	this->addChild(enemy1);
 
-	Sprite *enemy2 = Sprite::create("mum.png");
+	Sprite *enemy2 = Sprite::create("mom.png");
 	enemy2->setPosition(level->tileCoordinateToPosition(Point(44, 2)));
 	enemy2->setAnchorPoint(Point::ZERO);
 	enemy2->setScale(ENEMY_SCALE_FACTOR);
@@ -126,7 +98,7 @@ void GameScene::loadEnemies() {
 	this->addChild(enemy2);
 
 
-	Sprite *enemy3 = Sprite::create("mum.png");
+	Sprite *enemy3 = Sprite::create("mom.png");
 	enemy3->setPosition(level->tileCoordinateToPosition(Point(55, 2)));
 	enemy3->setAnchorPoint(Point::ZERO);
 	enemy3->setScale(ENEMY_SCALE_FACTOR);
@@ -136,7 +108,7 @@ void GameScene::loadEnemies() {
 	enemyList.push_back(enemy3);
 	this->addChild(enemy3);
 
-	Sprite *enemy4 = Sprite::create("mum.png");
+	Sprite *enemy4 = Sprite::create("mom.png");
 	enemy4->setPosition(level->tileCoordinateToPosition(Point(100, 2)));
 	enemy4->setAnchorPoint(Point::ZERO);
 	enemy4->setScale(ENEMY_SCALE_FACTOR);
@@ -146,7 +118,7 @@ void GameScene::loadEnemies() {
 	enemyList.push_back(enemy4);
 	this->addChild(enemy4);
 
-	Sprite *enemy5 = Sprite::create("mum.png");
+	Sprite *enemy5 = Sprite::create("mom.png");
 	enemy5->setPosition(level->tileCoordinateToPosition(Point(100, 6)));
 	enemy5->setAnchorPoint(Point::ZERO);
 	enemy5->setScale(ENEMY_SCALE_FACTOR);
@@ -159,114 +131,121 @@ void GameScene::loadEnemies() {
 }
 
 
-void GameScene::updateScene(float delta) {
+void GameScene::updateScene(float delta) 
+{
 
-	cameraTarget->setPositionX(player_sprite->getPosition().x);
+	cameraTarget->setPositionX(player->getPositionX());
 
 	this->updatePlayer(delta);
 
 }
 
-void GameScene::updatePlayer(float delta) {
+void GameScene::updatePlayer(float delta) 
+{
 
-	if (std::find(heldKeys.begin(), heldKeys.end(), SPACEBAR) != heldKeys.end()) {
+	if (std::find(heldKeys.begin(), heldKeys.end(), SPACEBAR) != heldKeys.end())
+	{
 
-		if (player->grounded && player->velocity.y <= 0) {
+		if (player->grounded && player->velocity_y <= 0) 
+		{
 
-			player->velocity.y = PLAYER_JUMP_VELOCITY;
-			player->state = Player::State::Jumping;
+			player->velocity_y = PLAYER_JUMP_VELOCITY;
+			player->jumping = true;
 			player->grounded = false;
 		}
 
 	}
 
-	if (std::find(heldKeys.begin(), heldKeys.end(), RIGHT_ARROW) != heldKeys.end()) {
+	if (std::find(heldKeys.begin(), heldKeys.end(), RIGHT_ARROW) != heldKeys.end())
+	{
 
-		player->velocity.x = PLAYER_MAX_VELOCITY;
+		player->velocity_x = PLAYER_MAX_VELOCITY;
 
-		if (player->grounded) {
-			player->state = Player::State::Walking;
-		}
-
-		player->facingRight = true;
+		player->facing_right = true;
 	}
 
-	if (std::find(heldKeys.begin(), heldKeys.end(), LEFT_ARROW) != heldKeys.end()) {
+	if (std::find(heldKeys.begin(), heldKeys.end(), LEFT_ARROW) != heldKeys.end())
+	{
 
-		player->velocity.x = -PLAYER_MAX_VELOCITY;
-		if (player->grounded) {
-			player->state = Player::State::Walking;
-		}
-		player->facingRight = false;
+		player->velocity_x = -PLAYER_MAX_VELOCITY;
+		player->facing_right = false;
 	}
 
-	player->velocity -= Point(0, GRAVITY);
-	stutteringFix = 1;
+	player->velocity_y -= GRAVITY;
 
-	Rect player_rect = player_sprite->getBoundingBox();
+	Rect player_rect = player->getBoundingBox();
 
 	Point tmp;
 	vector<Rect> tiles;
 	tiles.clear();
 
 	// center of player's sprite
-	tmp = level->positionToTileCoordinate(Point(player->position.x + player->player_size.width * 0.5f,
-		player->position.y + player->player_size.height * 0.5f));
+	tmp = level->positionToTileCoordinate(Point(player->getPositionX() + player->player_size.width * 0.5f, player->getPositionY() + player->player_size.height * 0.5f));
 
-	if (player->velocity.x > 0) {
+	if (player->velocity_x > 0)
+	{
 		tiles = level->getCollisionTilesX(tmp, 1);
 	}
-	else {
+	else
+	{
 		tiles = level->getCollisionTilesX(tmp, -1);
 	}
 
 	player_rect.setRect(
-		player_sprite->getBoundingBox().getMinX() + player->velocity.x,
-		player_sprite->getBoundingBox().getMinY() + 2.0f, // dont let the rectangle touch the ground otherwise, will count as collision
+		player->getBoundingBox().getMinX() + player->velocity_x,
+		player->getBoundingBox().getMinY() + 1.0f, // dont let the rectangle touch the ground otherwise, will count as collision
 		player->player_size.width,
 		player->player_size.height
 	);
 
-	for (Rect tile : tiles) {
-		if (player_rect.intersectsRect(tile)) {
-			player->velocity.x = 0;
+	for (Rect tile : tiles)
+	{
+		if (player_rect.intersectsRect(tile)) 
+		{
+			player->velocity_x = 0;
 			break;
 		}
 	}
 
 	tiles.clear();
 
-	if (player->velocity.y > 0) {
+	if (player->velocity_y > 0) 
+	{
 		tiles = level->getCollisionTilesY(tmp, 1);
 	}
-	else {
+	else if (player->velocity_y < 0)
+	{
 		tiles = level->getCollisionTilesY(tmp, -1);
 	}
 
 	player_rect.setRect(
-		player_sprite->getBoundingBox().getMinX(),
-		player_sprite->getBoundingBox().getMinY(),
+		player->getBoundingBox().getMinX(),
+		player->getBoundingBox().getMinY(),
 		player->player_size.width,
 		player->player_size.height
 	);
 
-	for (Rect tile : tiles) {
+	for (Rect tile : tiles)
+	{
 
-		if (tile.intersectsRect(player_rect)) {
-			if (player->velocity.y > 0) {
+		if (tile.intersectsRect(player_rect)) 
+		{
+			if (player->velocity_y > 0) 
+			{
 
-				player->position.y = tile.getMinY() - player->player_size.height;
+				player->setPositionY(player->getPositionY() - player->velocity_y);
 
 			}
-			else {
+			else 
+			{
 
-				player->position.y = tile.getMaxY();
+				player->setPositionY(tile.getMaxY());
 				// if we hit the ground, mark us as grounded so we can jump
 				player->grounded = true;
-				stutteringFix = 0;
+				player->jumping = false;
 
 			}
-			player->velocity.y = 0;
+			player->velocity_y = 0;
 			break;
 
 		}
@@ -274,84 +253,29 @@ void GameScene::updatePlayer(float delta) {
 	}
 
 	// check for enemy collisions
-	for (Sprite *tile : enemyList) {
+	for (Sprite *tile : enemyList)
+	{
 
-		if (tile->getBoundingBox().intersectsRect(player_rect)) {
+		if (tile->getBoundingBox().intersectsRect(player_rect))
+		{
 
 			Point p = level->tileCoordinateToPosition(Point(10, 2));
-			player->position.x = p.x;
-			player->position.y = p.y;
+			player->setPosition(p);
 		}
 	}
 
-	player->position.x = player->position.x + player->velocity.x;
-	player->position.y = player->position.y + player->velocity.y;
-
-	this->updatePlayerSprite(delta);
-
-	if (std::find(heldKeys.begin(), heldKeys.end(), RIGHT_ARROW) == heldKeys.end() && player->grounded) {
-		player->velocity.x = 0;
-		player->state = Player::State::Standing;
-	}
-
-	if (std::find(heldKeys.begin(), heldKeys.end(), LEFT_ARROW) == heldKeys.end() && player->grounded) {
-		player->velocity.x = 0;
-		player->state = Player::State::Standing;
-	}
+	player->updateState(delta);
+	player->velocity_x = 0;
 
 }
 
-void GameScene::updatePlayerSprite(float delta) {
-
-	if (player->state == Player::State::Walking) {
-
-		if (walkRight->isDone()) {
-			walkRight->startWithTarget(player_sprite);
-		}
-
-		walkRight->step(delta);
-
-		if (player->facingRight) {
-			player_sprite->setFlippedX(true);
-		}
-		else {
-			player_sprite->setFlippedX(false);
-		}
-
-	}
-	else if (player->state == Player::State::Jumping) {
-
-		player_sprite->setSpriteFrame(Sprite::createWithSpriteFrameName("jump")->getSpriteFrame());
-		if (player->facingRight) {
-			player_sprite->setFlippedX(true);
-		}
-		else {
-			player_sprite->setFlippedX(false);
-		}
-
-	}
-	else {
-		player_sprite->setSpriteFrame(Sprite::createWithSpriteFrameName("idle")->getSpriteFrame());
-	}
-
-	player_sprite->setPositionX(player->position.x);
-	if (stutteringFix != 0)
-		player_sprite->setPositionY(player->position.y);
-
-
-	/*rectWithBorder->setPositionX(player_sprite->getBoundingBox().getMinX());
-	if(stutteringFix != 0){
-	rectWithBorder->setPositionY(player->position.y);
-	}*/
-
-}
 
 void GameScene::onKeyPressed(EventKeyboard::KeyCode keyCode, Event* event)
 {
 
-	if (std::find(heldKeys.begin(), heldKeys.end(), keyCode) == heldKeys.end()) {
+	if (std::find(heldKeys.begin(), heldKeys.end(), keyCode) == heldKeys.end())
 		heldKeys.push_back(keyCode);
-	}
+	
 
 }
 

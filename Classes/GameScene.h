@@ -18,17 +18,11 @@ public:
 	//FIELDS
 	Level * level;
 	Player *player;
-	Sprite *player_sprite;
 	Sprite *cameraTarget;
-
-	Animate *walkRight;
-	Animate *jumping;
-	Animate *falling;
 
 	vector<Sprite*> enemyList;
 
 	boolean collidesX;
-	float stutteringFix;
 
 	Follow *camera;
 
@@ -44,7 +38,7 @@ public:
 	void updateScene(float interval);
 
 	void updatePlayer(float interval);
-	void updatePlayerSprite(float interval);
+
 	void loadEnemies();
 
 	int signum(float x);
@@ -54,7 +48,6 @@ public:
 	virtual bool init();
 
 	void menuCloseCallback(cocos2d::Ref* pSender);
-	void setupAnimations();
 
 	CREATE_FUNC(GameScene);
 
