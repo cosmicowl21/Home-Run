@@ -49,6 +49,8 @@ public:
 
 	void menuCloseCallback(cocos2d::Ref* pSender);
 
+	void GoToMainMenu(cocos2d::Ref* pSender);
+
 	CREATE_FUNC(GameScene);
 
 	GameScene(void);

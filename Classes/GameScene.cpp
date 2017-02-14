@@ -1,7 +1,10 @@
-
+#include "SimpleAudioEngine.h"
 #include "GameScene.h"
 #include "Global.h"
+#include "MainMenuScene.h"
 
+using namespace CocosDenshion;
+#define Music "Music.mp3"
 
 Scene* GameScene::createScene()
 {
@@ -21,10 +24,12 @@ bool GameScene::init()
 		return false;
 	}
 
+	SimpleAudioEngine::getInstance()->playBackgroundMusic(Music);
 	level = new Level();
 	level->loadMap("level1.tmx");
 	level->retain();
 
+	Size visibleSize = Director::getInstance()->getVisibleSize();//init size
 	auto director = Director::getInstance();
 	level->getMap()->setScale(SCALE_FACTOR);
 
@@ -52,6 +57,13 @@ bool GameScene::init()
 
 	this->addChild(cameraTarget);
 
+	auto Menu = MenuItemImage::create("Menu.png", "MenuPressed.png", CC_CALLBACK_1(GameScene::GoToMainMenu, this));
+	Menu->setPosition(Point(visibleSize.width / 11 + origin.x, visibleSize.height / 1.5 + origin.y));
+
+	auto MenuButton = Menu::create(Menu, NULL);
+	MenuButton->setPosition(Point::ZERO);
+	this->addChild(MenuButton);
+
 	rectWithBorder = DrawNode::create();
 	Vec2 vertices[] =
 	{
@@ -78,7 +90,7 @@ void GameScene::loadEnemies()
 {
 
 	Sprite *enemy1 = Sprite::create("mom.png");
-	enemy1->setPosition(level->tileCoordinateToPosition(Point(30, 0.5)));
+	enemy1->setPosition(level->tileCoordinateToPosition(Point(30, 1.8)));
 	enemy1->setAnchorPoint(Point::ZERO);
 	enemy1->setScale(ENEMY_SCALE_FACTOR);
 	enemy1->setFlippedX(true);
@@ -88,7 +100,7 @@ void GameScene::loadEnemies()
 	this->addChild(enemy1);
 
 	Sprite *enemy2 = Sprite::create("mom.png");
-	enemy2->setPosition(level->tileCoordinateToPosition(Point(44, 2)));
+	enemy2->setPosition(level->tileCoordinateToPosition(Point(40, 1.8)));
 	enemy2->setAnchorPoint(Point::ZERO);
 	enemy2->setScale(ENEMY_SCALE_FACTOR);
 	enemy2->setFlippedX(true);
@@ -99,7 +111,7 @@ void GameScene::loadEnemies()
 
 
 	Sprite *enemy3 = Sprite::create("mom.png");
-	enemy3->setPosition(level->tileCoordinateToPosition(Point(55, 2)));
+	enemy3->setPosition(level->tileCoordinateToPosition(Point(45, 1.8)));
 	enemy3->setAnchorPoint(Point::ZERO);
 	enemy3->setScale(ENEMY_SCALE_FACTOR);
 	enemy3->setFlippedX(true);
@@ -109,7 +121,7 @@ void GameScene::loadEnemies()
 	this->addChild(enemy3);
 
 	Sprite *enemy4 = Sprite::create("mom.png");
-	enemy4->setPosition(level->tileCoordinateToPosition(Point(100, 2)));
+	enemy4->setPosition(level->tileCoordinateToPosition(Point(60, 1.8)));
 	enemy4->setAnchorPoint(Point::ZERO);
 	enemy4->setScale(ENEMY_SCALE_FACTOR);
 	enemy4->setFlippedX(true);
@@ -119,7 +131,7 @@ void GameScene::loadEnemies()
 	this->addChild(enemy4);
 
 	Sprite *enemy5 = Sprite::create("mom.png");
-	enemy5->setPosition(level->tileCoordinateToPosition(Point(100, 6)));
+	enemy5->setPosition(level->tileCoordinateToPosition(Point(75, 1.8)));
 	enemy5->setAnchorPoint(Point::ZERO);
 	enemy5->setScale(ENEMY_SCALE_FACTOR);
 	enemy5->setFlippedX(true);
@@ -292,6 +304,12 @@ int GameScene::signum(float x)
 		return -1.0L;
 	else
 		return 0.0L;
+}
+
+void GameScene::GoToMainMenu(Ref* pSender)
+{
+	auto scene = MainMenuScene::createScene();
+	Director::getInstance()->replaceScene(TransitionZoomFlipY::create( 2.0, scene));
 }
 
 void GameScene::menuCloseCallback(Ref* pSender)

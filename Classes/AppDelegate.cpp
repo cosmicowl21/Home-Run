@@ -1,6 +1,6 @@
 
 #include "AppDelegate.h"
-#include "GameScene.h"
+#include "MainMenuScene.h"
 
 USING_NS_CC;
 
@@ -63,7 +63,7 @@ bool AppDelegate::applicationDidFinishLaunching()
 	SpriteFrameCache::getInstance()->addSpriteFramesWithFile("solbrain.plist");
 	AnimationCache::getInstance()->addAnimationsWithFile("solbrain-animations.plist");
 
-	auto scene = GameScene::createScene();
+	auto scene = MainMenuScene::createScene();
 
 	director->runWithScene(scene);
 

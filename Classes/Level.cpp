@@ -2,17 +2,20 @@
 #include "Level.h"
 #include "Global.h"
 
-void Level::loadMap(const char* mapname) {
+void Level::loadMap(const char* mapname)
+{
 
 	map = TMXTiledMap::create(mapname);
 	map->retain();
-}
+}//pop go0es the measeos
 
-TMXTiledMap * Level::getMap() {
+TMXTiledMap * Level::getMap() 
+{
 	return map;
 }
 
-Point Level::tileCoordinateToPosition(Point point) {
+Point Level::tileCoordinateToPosition(Point point) 
+{
 
 	float x = floor(point.x * map->getTileSize().width * SCALE_FACTOR);
 	float y = floor(point.y * map->getTileSize().height * SCALE_FACTOR);
@@ -21,7 +24,9 @@ Point Level::tileCoordinateToPosition(Point point) {
 
 }
 
-Point Level::positionToTileCoordinate(Point point) {
+
+Point Level::positionToTileCoordinate(Point point) 
+{
 
 	float x = floor(point.x / (map->getTileSize().width * SCALE_FACTOR));
 	float y = floor(point.y / (map->getTileSize().height * SCALE_FACTOR));
@@ -29,7 +34,8 @@ Point Level::positionToTileCoordinate(Point point) {
 	return Point((int)x, (int)y);
 }
 
-vector<Rect> Level::getCollisionTilesY(Point point, int direction) {
+vector<Rect> Level::getCollisionTilesY(Point point, int direction)
+{
 
 	vector<Rect> list;
 
@@ -37,11 +43,13 @@ vector<Rect> Level::getCollisionTilesY(Point point, int direction) {
 
 	int mapheight = (int)map->getMapSize().height - 1;
 
-	for (int b = -1; b < 2; b++) {
+	for (int b = -1; b < 2; b++)
+	{
 
 		Sprite *tile = walls->getTileAt(Point((int)point.x + b, mapheight - ((int)point.y + direction)));
 
-		if (tile != NULL) {
+		if (tile != NULL) 
+		{
 
 			Rect tileRect = Rect();
 
@@ -57,7 +65,8 @@ vector<Rect> Level::getCollisionTilesY(Point point, int direction) {
 
 }
 
-vector<Rect> Level::getCollisionTilesX(Point point, int direction) {
+vector<Rect> Level::getCollisionTilesX(Point point, int direction)
+{
 
 	vector<Rect> list;
 
@@ -65,11 +74,13 @@ vector<Rect> Level::getCollisionTilesX(Point point, int direction) {
 
 	int mapheight = (int)map->getMapSize().height - 1;
 
-	for (int b = -1; b < 2; b++) {
+	for (int b = -1; b < 2; b++)
+	{
 
 		Sprite *tile = walls->getTileAt(Point((int)point.x + direction, mapheight - ((int)point.y + b)));
 
-		if (tile != NULL) {
+		if (tile != NULL) 
+		{
 
 			Rect tileRect = Rect();
 
