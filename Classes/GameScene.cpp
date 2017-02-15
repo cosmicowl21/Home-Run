@@ -8,10 +8,13 @@ using namespace CocosDenshion;
 
 Scene* GameScene::createScene()
 {
-	auto scene = Scene::create();
-
+	//creating a scene with physics 
+	auto scene = Scene::createWithPhysics();
+	//setting up the physics world and taking it from the premade cocos physics
+	scene->getPhysicsWorld()->setGravity(Vec2(0, 0));
 	auto layer = GameScene::create();
 
+	// adding the scene to the layer
 	scene->addChild(layer);
 
 	return scene;
@@ -24,46 +27,76 @@ bool GameScene::init()
 		return false;
 	}
 
+	// playing hte music whene the level enters from main maneu 
 	SimpleAudioEngine::getInstance()->playBackgroundMusic(Music);
+	// creating a new level
 	level = new Level();
+	//loading in the initialized map
 	level->loadMap("level1.tmx");
-	level->retain();
+	// retaining the map untill the end of the game
+	level->retain();//***relsease later in the code *****
 
-	Size visibleSize = Director::getInstance()->getVisibleSize();//init size
+	// setting up the scene director and the size ratios 
+	auto visibleSize = Director::getInstance()->getVisibleSize();//init size
 	auto director = Director::getInstance();
 	level->getMap()->setScale(SCALE_FACTOR);
-
+	// adding the map to the level
 	this->addChild(level->getMap());
 
+	//creating a player and retaing it untill i delete it in the deconstuctor
 	player = Player::create();
-	player->retain();
+	player->retain();//***relsease later in the code *****
 
+	// setting up a spawn point
 	Point point = Point(10, 2);
-
 	player->setPosition(level->tileCoordinateToPosition(point));
 
 	Point origin = Director::getInstance()->getVisibleOrigin();
 	Size wsize = Director::getInstance()->getVisibleSize();  //default screen size (or design resolution size, if you are using design resolution)
 	Point *center = new Point(wsize.width / 2 + origin.x, wsize.height / 2 + origin.y);
-
+	// setting up a camera 
 	cameraTarget = Sprite::create();
 	cameraTarget->setPositionX(player->getPositionX()); // set to players x
 	cameraTarget->setPositionY(wsize.height / 2 + origin.y); // center of height
+	// retaining it till the end
+	cameraTarget->retain(); //***relsease later in the code *****
 
-	cameraTarget->retain();
-
+	// adding the player to the layer and updating the game scene
 	this->addChild(player);
 	this->schedule(schedule_selector(GameScene::updateScene));
 
+	// adding the camera to the layer
 	this->addChild(cameraTarget);
 
+	// creating the main menu buttons 
 	auto Menu = MenuItemImage::create("Menu.png", "MenuPressed.png", CC_CALLBACK_1(GameScene::GoToMainMenu, this));
 	Menu->setPosition(Point(visibleSize.width / 11 + origin.x, visibleSize.height / 1.5 + origin.y));
 
+	//// adding the button to the layer
 	auto MenuButton = Menu::create(Menu, NULL);
 	MenuButton->setPosition(Point::ZERO);
 	this->addChild(MenuButton);
 
+	//making the sprite
+	auto house = Sprite::create("home.png"); 
+	//setting up the postition
+	house->setPosition(Vec2(visibleSize.width* 6.7, visibleSize.height * 0.33));
+	
+	// getting hte size of the house
+	auto houseSize = house->getContentSize();
+	// giving the house some physics
+	auto physicsBody = PhysicsBody::createBox(Size(houseSize.width, houseSize.height),
+		PhysicsMaterial(0.1f, 1.0f, 0.0f));
+
+	// set it to active
+	physicsBody->setDynamic(true);
+	// add the house to the physics body
+	house->setPhysicsBody(physicsBody);
+	// add the house to the scene
+	this->addChild(house);
+
+	
+// setting up the bounding box of the player
 	rectWithBorder = DrawNode::create();
 	Vec2 vertices[] =
 	{
@@ -73,22 +106,26 @@ bool GameScene::init()
 		Vec2(0,0)
 	};
 
+	// giving the bounding box a colour 
 	rectWithBorder->drawPolygon(vertices, 4, Color4F(0.0f, 0.3f, 0.3f, 1), 0, Color4F(0.0f, 0.2f, 0.0f, 1));
+	// adding the bounding box to the layer
+	this->addChild(rectWithBorder);
 
-	addChild(rectWithBorder);
-
+	// making the camera follow the player using 
 	camera = Follow::create(cameraTarget, Rect::ZERO);
-	camera->retain();
-
+	//stay using the camera
+	camera->retain();// ****release later in the code****
+	//calling the method 
 	loadEnemies();
-
+	// run the camera follow
 	this->runAction(camera);
 	return true;
 }
 
+// creating all the enemies in the game
 void GameScene::loadEnemies() 
 {
-
+	
 	Sprite *enemy1 = Sprite::create("mom.png");
 	enemy1->setPosition(level->tileCoordinateToPosition(Point(30, 1.8)));
 	enemy1->setAnchorPoint(Point::ZERO);
@@ -142,7 +179,7 @@ void GameScene::loadEnemies()
 
 }
 
-
+// updating the scene
 void GameScene::updateScene(float delta) 
 {
 
@@ -151,42 +188,49 @@ void GameScene::updateScene(float delta)
 	this->updatePlayer(delta);
 
 }
-
+// updating the player
 void GameScene::updatePlayer(float delta) 
 {
-
-	if (std::find(heldKeys.begin(), heldKeys.end(), SPACEBAR) != heldKeys.end())
+	// for all the variables with caps please refer to "Global.h"
+	// using a vector and using the global varibales that I have set in Global.h
+	// if the right arrow is pressed then execuite
+	if (std::find(heldKeys.begin(), heldKeys.end(), UP_ARROW) != heldKeys.end())
 	{
-
+		// if the grounded and velocit of y vars are less than 0 then..
 		if (player->grounded && player->velocity_y <= 0) 
 		{
-
+			// make the player jump
 			player->velocity_y = PLAYER_JUMP_VELOCITY;
+			// player jump bool is true as he is in the air
 			player->jumping = true;
+			// gorund bool is flase as he is in the air
 			player->grounded = false;
 		}
 
 	}
 
+	// if the right arrow is pressed then execute
 	if (std::find(heldKeys.begin(), heldKeys.end(), RIGHT_ARROW) != heldKeys.end())
 	{
-
+		// assign the player x velocity to the max velocity
 		player->velocity_x = PLAYER_MAX_VELOCITY;
-
+		
+		// set the player facing right bool to be true as he is moving right
 		player->facing_right = true;
 	}
-
+	// if the left arrow is pressed then execute
 	if (std::find(heldKeys.begin(), heldKeys.end(), LEFT_ARROW) != heldKeys.end())
 	{
-
+		// assign the player x velocity to the max velocity
 		player->velocity_x = -PLAYER_MAX_VELOCITY;
+		// set to flase as we are moving left
 		player->facing_right = false;
 	}
-
+	// when the player jumps put gravity on him 
 	player->velocity_y -= GRAVITY;
-
+	// get the bounding box of the player 
 	Rect player_rect = player->getBoundingBox();
-
+	// create a temporay point
 	Point tmp;
 	vector<Rect> tiles;
 	tiles.clear();
@@ -194,6 +238,7 @@ void GameScene::updatePlayer(float delta)
 	// center of player's sprite
 	tmp = level->positionToTileCoordinate(Point(player->getPositionX() + player->player_size.width * 0.5f, player->getPositionY() + player->player_size.height * 0.5f));
 
+	// if the player is moving (has veloicty) then he will collide with the tile map
 	if (player->velocity_x > 0)
 	{
 		tiles = level->getCollisionTilesX(tmp, 1);
@@ -202,7 +247,7 @@ void GameScene::updatePlayer(float delta)
 	{
 		tiles = level->getCollisionTilesX(tmp, -1);
 	}
-
+	// setting the bounding box
 	player_rect.setRect(
 		player->getBoundingBox().getMinX() + player->velocity_x,
 		player->getBoundingBox().getMinY() + 1.0f, // dont let the rectangle touch the ground otherwise, will count as collision
@@ -210,6 +255,7 @@ void GameScene::updatePlayer(float delta)
 		player->player_size.height
 	);
 
+	// if the player hits a tile remove the velocity
 	for (Rect tile : tiles)
 	{
 		if (player_rect.intersectsRect(tile)) 
@@ -219,8 +265,10 @@ void GameScene::updatePlayer(float delta)
 		}
 	}
 
+	// clear the tiles 
 	tiles.clear();
 
+	// if i hit a tile in the air
 	if (player->velocity_y > 0) 
 	{
 		tiles = level->getCollisionTilesY(tmp, 1);
@@ -282,6 +330,8 @@ void GameScene::updatePlayer(float delta)
 }
 
 
+
+// creating the keybord vectors 
 void GameScene::onKeyPressed(EventKeyboard::KeyCode keyCode, Event* event)
 {
 
@@ -291,6 +341,7 @@ void GameScene::onKeyPressed(EventKeyboard::KeyCode keyCode, Event* event)
 
 }
 
+// what happens when the keys are realised
 void GameScene::onKeyReleased(EventKeyboard::KeyCode keyCode, Event* event)
 {
 	heldKeys.erase(std::remove(heldKeys.begin(), heldKeys.end(), keyCode), heldKeys.end());
@@ -306,12 +357,14 @@ int GameScene::signum(float x)
 		return 0.0L;
 }
 
+// button to go back to the main menu
 void GameScene::GoToMainMenu(Ref* pSender)
 {
 	auto scene = MainMenuScene::createScene();
 	Director::getInstance()->replaceScene(TransitionZoomFlipY::create( 2.0, scene));
 }
 
+// when we close the game
 void GameScene::menuCloseCallback(Ref* pSender)
 {
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WP8) || (CC_TARGET_PLATFORM == CC_PLATFORM_WINRT)
@@ -332,4 +385,10 @@ GameScene::GameScene(void)
 }
 GameScene::~GameScene(void)
 {
+	// releasing what i retained in the init method
+	level->release();
+	player->release();
+	camera->release();
+	cameraTarget->release();
+
 }
